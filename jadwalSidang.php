@@ -46,8 +46,21 @@
 			<tr><td>Dosen Penguji</td><td>" . $c . "</td></tr>";
 	}
 
-/*	 if($role == "DOSEN"){
+
+	if($role == "DOSEN"){
 		$nip = $_SESSION["nip"];
+		$conn = connectDatabase();
+		$sql = "SELECT mks.judul, js.tanggal, js.jammulai, js.jamselesai, r.namaruangan FROM MATA_KULIAH_SPESIAL mks, JADWAL_SIDANG js, RUANGAN R, MAHASISWA m WHERE MKS.idmks=js.idmks AND m.npm=mks.npm AND r.idruangan=js.idruangan AND m.npm='" . $npm ."'";
+		$result = pg_query($conn, $sql);
+		if (!$result) {
+			die("Error in SQL query: " . pg_last_error());
+		}
+		if (pg_num_rows($result) != 0) {
+			$data = pg_fetch_array($result);
+			$judul = $data[0];
+			$tanggal = $data[1];
+			$waktu = $data[2] ." - ". $data[3] ." @ ". $data[4];
+		}
 		$roleData = $roleData . 
 			"<tr><td>Mahasiswa</td><td>" . $ . "</td></tr>
 			<tr><td>Jenis Sidang</td><td>" . $ . "</td></tr>
@@ -57,7 +70,7 @@
 			<tr><td>Status</td><td>" . $ . "</td></tr>";
 	}
 
-	if($role == "ADMIN"){
+/*	if($role == "ADMIN"){
 		$sql = "SELECT m.nama, jmks.nama, mks.judul, js.jammulai, js.jamselesai, r.nama, dp.nama, dpj. nama 
 		FROM MAHASISWA m, JENIS_MKS jmks, MATA_KULIAH_SPESIAL mks, JADWAL_SIDANG js, RUANGAN r, DOSEN_PEMBIMBING dp, DOSEN_PENGUJI dpj 
 		WHERE m.NPM=mks.NPM AND mks.idjenismks=jmks.id AND mks.idmks=js.idmks AND dp.idmks=mks.idmks AND dpj.idmks=mks.idmks AND js.idruangan=r.idruangan AND ";
