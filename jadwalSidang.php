@@ -52,27 +52,15 @@
 	if($role == "DOSEN"){
 		$nip = $_SESSION["nip"];
 		$conn = connectDatabase();
-		$sql = "SELECT m.nama AS namam, jmks.namamks, mks.judul, js.tanggal, js.jammulai, js.jamselesai, r.namaruangan, d.nama AS namad, CASE mks.izinmajusidang when 't' then 'Izin maju sidang' else 'Tidak Diizinkan' END AS izinsidang, CASE mks.pengumpulanhardcopy when 't' then 'Kumpul Hard Copy' else 'Belum Kumpul Hard Copy' END AS hardcopy 
-			FROM MAHASISWA m, JENIS_MKS jmks, MATA_KULIAH_SPESIAL mks, JADWAL_SIDANG js, RUANGAN r, DOSEN d, DOSEN_PEMBIMBING dp
-			WHERE m.npm=mks.npm AND mks.idmks=js.idmks AND mks.idjenismks=jmks.id AND r.idruangan=js.idruangan AND mks.idmks=dp.idmks AND dp.nip_dosenpembimbing=d.nip AND m.npm IN (
-				SELECT m.npm
-				FROM MAHASISWA m, MATA_KULIAH_SPESIAL mks, DOSEN d, DOSEN_PEMBIMBING dp
-				WHERE m.npm=mks.npm AND mks.idmks=dp.idmks AND dp.nip_dosenpembimbing=d.nip AND d.nip='". $nip ."'
-			)";
+		$sql = "SELECT js.idjadwal, m.npm, m.nama AS namam, jmks.namamks, mks.judul, js.tanggal, js.jammulai, js.jamselesai, r.namaruangan, CASE mks.izinmajusidang when 't' then 'Izin maju sidang' else 'Tidak Diizinkan' END AS izinsidang, CASE mks.pengumpulanhardcopy when 't' then 'Kumpul Hard Copy' else 'Belum Kumpul Hard Copy' END AS hardcopy 
+		FROM MAHASISWA m, JENIS_MKS jmks, MATA_KULIAH_SPESIAL mks, JADWAL_SIDANG js, RUANGAN r, DOSEN d, DOSEN_PEMBIMBING dp
+		WHERE m.npm=mks.npm AND mks.idmks=js.idmks AND mks.idjenismks=jmks.id AND r.idruangan=js.idruangan AND mks.idmks=dp.idmks AND dp.nip_dosenpembimbing=d.nip AND dp.nip_dosenpembimbing='" .$nip. "'";
 		$result = pg_query($conn, $sql);
+		
 		if (!$result) {
 			die("Error in SQL query: " . pg_last_error());
 		}
-	/*	if (pg_num_rows($result) != 0) {
-			$data = pg_fetch_array($result);
-			$namaMhs = $data[0];
-			$jenisSidang = $data[1];
-			$judul = $data[2];
-			$waktu = $data[3] . "<br>" . $data[4] . " - " . $data[5] . "<br>" . $data[6];
-			$pembimbing = $data[7];
-			$status = $data[8] . "<br>" . $data[9];
-		}
-*/
+
 		$d = "";
 		while($row = pg_fetch_assoc($result)){
 			$d = $d . "<tr><td>" .
@@ -82,8 +70,20 @@
 			$row['tanggal'] ."<br>". 
 			$row['jammulai'] ." - ". 
 			$row['jamselesai'] ."<br>". 
-			$row['namaruangan'] ."</td><td>". 
-			$row['namad'] ."</td><td>". 
+			$row['namaruangan'] ."</td><td>";
+			
+			$sqlInner = "SELECT d.nama AS namad
+			FROM DOSEN d, DOSEN_PEMBIMBING dp, MATA_KULIAH_SPESIAL mks, MAHASISWA m, JADWAL_SIDANG js
+			WHERE m.npm=mks.npm AND mks.idmks=js.idmks AND mks.idmks=dp.idmks AND d.nip=dp.nip_dosenpembimbing AND m.npm='" .$row['npm']. "' AND js.idjadwal='" .$row['idjadwal']. "' AND d.nama NOT LIKE '" .$nama. "'";
+			$resultInner = pg_query($conn, $sqlInner);
+			if (!$resultInner) {
+				die("Error in SQL query: " . pg_last_error());
+			};
+			while($rowInner = pg_fetch_assoc($resultInner)){
+				$d = $d . $rowInner['namad'] . "<br>";
+			};
+
+			$d = $d . "</td><td>" .
 			$row['izinsidang'] ."<br>". 
 			$row['hardcopy'] ."</td></tr>";
 		}
@@ -136,7 +136,7 @@
 
 	<body>
 		<div id="title">
-			<h1>Jadwal Sidang Mahasiswa <?php echo $nama; ?></h1>
+			<h1>Jadwal Sidang - <?php echo $nama; ?></h1>
 			<?php include "navbar.php"; ?>
 		</div>
 		<table>
