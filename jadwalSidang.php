@@ -6,7 +6,12 @@
 	$nama = $_SESSION["nama"];
 	$roleData = "";
 	$orderBy = cekOrder();
-	$offset = $_GET['page']*10 - 10;
+	if($_GET['page'] != null){
+		$offset = $_GET['page']*10 - 10;	
+	}
+	else {
+		$offset = 1;
+	}
 	
 	function cekOrder(){
 		$order = $_GET['order'];
@@ -110,6 +115,7 @@
 		$conn = connectDatabase();
 		$fk = "";
 		$tabel = "";
+		$orderBy = cekOrder();
 
 		if($roleSpesifik == "Pembimbing"){
 			$fk = "dp.nip_dosenpembimbing";
@@ -161,7 +167,11 @@
 
 		$data = "";
 		$data = $data .
-		"<p>Sort By: [<a href='jadwalSidang.php?order=nama'>Mahasiswa</a>], [<a href='jadwalSidang.php?order=namamks'>Jenis Sidang</a>], [<a href='jadwalSidang.php?order=waktu'>Waktu</a>]</p>
+		"<p>
+			Sort By: [<a href='jadwalSidang.php?order=nama&page=1'>Mahasiswa</a>], 
+			[<a href='jadwalSidang.php?order=namamks&page=1'>Jenis Sidang</a>], 
+			[<a href='jadwalSidang.php?order=waktu&page=1'>Waktu</a>]
+		</p>
 		<table><th>Mahasiswa</th><th>Jenis Sidang</th><th>Judul</th><th>Waktu dan Lokasi</th><th>".$roleSpesifik." Lain</th><th>Status</th>
 		<tr>"
 			.$d.

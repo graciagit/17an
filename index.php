@@ -18,7 +18,7 @@
 	// Redirect page masing2 ketika session masih ada
 	if (isset($_SESSION["userlogin"])) {
 		if($_SESSION["role"]=="MHS")
-			header("Location: jadwalSidang.php");
+			header("Location: jadwalSidang.php?order=waktu&page=1");
 		elseif($_SESSION["role"]=="DOSEN")
 			header("Location: jadwalSidang.php?order=waktu&page=1");
 		elseif($_SESSION["role"]=="ADMIN")
