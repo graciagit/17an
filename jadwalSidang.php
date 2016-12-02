@@ -5,6 +5,8 @@
 	$role = $_SESSION["role"];
 	$nama = $_SESSION["nama"];
 	$roleData = "";
+	$orderBy = cekOrder();
+	$offset = $_GET['page']*10 - 10;
 	
 	function cekOrder(){
 		$order = $_GET['order'];
@@ -17,7 +19,33 @@
 		elseif($order == 'waktu'){
 			$order = "js.tanggal, js.jammulai";
 		}
+		else{
+			$order = "js.tanggal, js.jammulai";	
+		}
 		return $order;		
+	}
+
+	function hitungPage(){
+		$orderBy = cekOrder();
+		$conn = connectDatabase();
+		$sql = "SELECT m.npm, m.nama, jmks.namamks, mks.judul, js.tanggal, js.jammulai, js.jamselesai, r.namaruangan 
+		FROM MAHASISWA m, JENIS_MKS jmks, MATA_KULIAH_SPESIAL mks, JADWAL_SIDANG js, RUANGAN r
+		WHERE m.NPM=mks.NPM AND mks.idjenismks=jmks.id AND mks.idmks=js.idmks AND js.idruangan=r.idruangan";
+
+		$result = pg_query($conn, $sql);
+		if (!$result) {
+			die("Error in SQL query: " . pg_last_error());
+		}
+
+		$numrow = pg_num_rows($result);
+		$jumlahPage = $numrow / 10;
+
+		$pagging = "";
+		for($i=1; $i<=$jumlahPage; $i=$i+1){
+			$pagging = $pagging . "<li><a href='jadwalSidang.php?order=" .$_GET['order']. "&page=" .$i. "'>" .$i. "</a></li>";
+		}
+
+		return $pagging;
 	}
 
 	// ROLE MAHASISWA
@@ -82,7 +110,6 @@
 		$conn = connectDatabase();
 		$fk = "";
 		$tabel = "";
-		$orderBy = "" . cekOrder();
 
 		if($roleSpesifik == "Pembimbing"){
 			$fk = "dp.nip_dosenpembimbing";
@@ -145,18 +172,21 @@
 
 	// ROLE ADMIN
 	if($role == "ADMIN"){
-		$orderBy = "" . cekOrder();
 		$conn = connectDatabase();
 		$sql = "SELECT m.npm, m.nama, jmks.namamks, mks.judul, js.tanggal, js.jammulai, js.jamselesai, r.namaruangan 
 		FROM MAHASISWA m, JENIS_MKS jmks, MATA_KULIAH_SPESIAL mks, JADWAL_SIDANG js, RUANGAN r
 		WHERE m.NPM=mks.NPM AND mks.idjenismks=jmks.id AND mks.idmks=js.idmks AND js.idruangan=r.idruangan
-		ORDER BY " . $orderBy;
+		ORDER BY " . $orderBy . "
+		LIMIT 10 OFFSET " . $offset;
 
 		$result = pg_query($conn, $sql);
 		if (!$result) {
 			die("Error in SQL query: " . pg_last_error());
 		}
 
+		$numrow = pg_num_rows($result);
+		$jumlahPage = $numrow / 10;
+		
 		$data = "";
 		while($row = pg_fetch_assoc($result)){
 			$data = $data . 
@@ -199,10 +229,14 @@
 		}
 
 		$roleData = "<button><a href='#'>Tambah</a></button>
-			<p>Sort By: [<a href='jadwalSidang.php?order=nama'>Mahasiswa</a>], [<a href='jadwalSidang.php?order=namamks'>Jenis Sidang</a>], [<a href='jadwalSidang.php?order=waktu'>Waktu</a>]</p>
+			<p>
+				Sort By: [<a href='jadwalSidang.php?order=nama&page=1'>Mahasiswa</a>], 
+				[<a href='jadwalSidang.php?order=namamks&page=1'>Jenis Sidang</a>], 
+				[<a href='jadwalSidang.php?order=waktu&page=1'>Waktu</a>]
+			</p>
 			<table><th>Mahasiswa</th><th>Jenis Sidang</th><th>Judul</th><th>Waktu dan Lokasi</th><th>Dosen Pembimbing</th><th>Dosen Penguji</th><th>Action</th>" 
 			.$data. 
-			"</table>";
+			"</table>" . hitungPage();
 	}
 ?>
 

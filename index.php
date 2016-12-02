@@ -20,9 +20,9 @@
 		if($_SESSION["role"]=="MHS")
 			header("Location: jadwalSidang.php");
 		elseif($_SESSION["role"]=="DOSEN")
-			header("Location: jadwalSidang.php?order=waktu");
+			header("Location: jadwalSidang.php?order=waktu&page=1");
 		elseif($_SESSION["role"]=="ADMIN")
-			header("Location: jadwalSidang.php?order=waktu");
+			header("Location: jadwalSidang.php?order=waktu&page=1");
 	}
 	
 	// Fungsi login
