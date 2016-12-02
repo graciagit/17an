@@ -21,10 +21,21 @@
 			header("Location: jadwalSidang.php");
 		elseif($_SESSION["role"]=="DOSEN")
 			header("Location: jadwalSidang.php");
+		elseif($_SESSION["role"]=="ADMIN")
+			header("Location: jadwalSidang.php");
 	}
 	
 	// Fungsi login
 	function login($user, $pass){		
+		$success = false;
+		if($user == "admin" && $pass == "admin"){
+			$_SESSION["username"] = $user;
+			$_SESSION['role'] = "ADMIN";
+			$_SESSION["nama"] = "Admin";
+			$success = true;
+			return $success;
+		}
+
 		$conn = connectDatabase();
 		// query the database to return username and password existence
 		$sqlMhs = "SELECT username, password, npm, nama FROM MAHASISWA WHERE username='$user' and password='$pass'";
@@ -35,7 +46,6 @@
 			die("Error in SQL query: " . pg_last_error());
 		}
 		
-		$success = false;
 		if (pg_num_rows($resultMhs) != 0) {
 			$field = pg_fetch_array($resultMhs);
 			$_SESSION["username"] = $user;
