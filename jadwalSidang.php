@@ -30,12 +30,12 @@
 		return $order;		
 	}
 
-	function hitungPage(){
+	function hitungPageAdmin(){
 		$orderBy = cekOrder();
 		$conn = connectDatabase();
 		$sql = "SELECT m.npm, m.nama, jmks.namamks, mks.judul, js.tanggal, js.jammulai, js.jamselesai, r.namaruangan 
 		FROM MAHASISWA m, JENIS_MKS jmks, MATA_KULIAH_SPESIAL mks, JADWAL_SIDANG js, RUANGAN r
-		WHERE m.NPM=mks.NPM AND mks.idjenismks=jmks.id AND mks.idmks=js.idmks AND js.idruangan=r.idruangan";
+		WHERE m.NPM=mks.NPM AND mks.idjenismks=jmks.id AND mks.idmks=js.idmks AND js.idruangan=r.idruangan AND mks.issiapsidang=true";
 
 		$result = pg_query($conn, $sql);
 		if (!$result) {
@@ -58,10 +58,13 @@
 		$npm = $_SESSION["npm"];
 		$conn = connectDatabase();
 
-		$sql = "SELECT mks.judul, js.tanggal, js.jammulai, js.jamselesai, r.namaruangan FROM MATA_KULIAH_SPESIAL mks, JADWAL_SIDANG js, RUANGAN R, MAHASISWA m WHERE MKS.idmks=js.idmks AND m.npm=mks.npm AND r.idruangan=js.idruangan AND m.npm='" . $npm ."'";
+		$sql = "SELECT mks.judul, js.tanggal, js.jammulai, js.jamselesai, r.namaruangan FROM MATA_KULIAH_SPESIAL mks, JADWAL_SIDANG js, RUANGAN R, MAHASISWA m WHERE MKS.idmks=js.idmks AND m.npm=mks.npm AND r.idruangan=js.idruangan AND mks.issiapsidang=true AND m.npm='" . $npm ."'";
 		$result = pg_query($conn, $sql);
 		if (!$result) {
 			die("Error in SQL query: " . pg_last_error());
+		}
+		elseif(pg_fetch_assoc($result) < 1){
+			$roleData = "Jadwal Sidang Anda belum Ada";
 		}
 
 		while($row = pg_fetch_assoc($result)){
@@ -185,7 +188,7 @@
 		$conn = connectDatabase();
 		$sql = "SELECT m.npm, m.nama, jmks.namamks, mks.judul, js.tanggal, js.jammulai, js.jamselesai, r.namaruangan 
 		FROM MAHASISWA m, JENIS_MKS jmks, MATA_KULIAH_SPESIAL mks, JADWAL_SIDANG js, RUANGAN r
-		WHERE m.NPM=mks.NPM AND mks.idjenismks=jmks.id AND mks.idmks=js.idmks AND js.idruangan=r.idruangan
+		WHERE m.NPM=mks.NPM AND mks.idjenismks=jmks.id AND mks.idmks=js.idmks AND js.idruangan=r.idruangan AND mks.issiapsidang=true
 		ORDER BY " . $orderBy . "
 		LIMIT 10 OFFSET " . $offset;
 
@@ -246,7 +249,7 @@
 			</p>
 			<table><th>Mahasiswa</th><th>Jenis Sidang</th><th>Judul</th><th>Waktu dan Lokasi</th><th>Dosen Pembimbing</th><th>Dosen Penguji</th><th>Action</th>" 
 			.$data. 
-			"</table>" . hitungPage();
+			"</table>" . hitungPageAdmin();
 	}
 ?>
 
