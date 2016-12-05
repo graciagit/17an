@@ -6,6 +6,9 @@
 	$nama = $_SESSION["nama"];
 	$roleData = "";
 	$orderBy = cekOrder();
+	if(!isset($_SESSION['userlogin'])){
+		header("Location: index.php");
+	}
 	if($_GET['page'] != null){
 		$offset = $_GET['page']*10 - 10;	
 	}
